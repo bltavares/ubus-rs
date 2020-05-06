@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    'ubus-sys',
+    'ubus',
+    'ubus-cli',
+]

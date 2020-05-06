@@ -1,0 +1,4 @@
+[build.env]
+passthrough = ['LIBUBUS_DIR']
+[target.mips-unknown-linux-musl]
+image = 'bltavares/rust-cross-mips-openwrt'
