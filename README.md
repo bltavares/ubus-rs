@@ -19,6 +19,8 @@ Tested on:
 cross build --target mips-unknown-linux-musl -p ubus-cli
 ```
 
+Then `scp` the executable files on `target/mips-unknown-linux-musl`
+
 ## Using this as a library to build other projects
 
 Add this as a dependency:
