@@ -3,5 +3,5 @@ name = 'ubus-cli'
 version = '0.1.0'
 authors = ['Bruno Tavares <connect+github@bltavares.com>']
 edition = '2018'
-[dependencies.ubus-sys]
-path = '../ubus-sys'
+[dependencies.ubus]
+path = '../ubus'

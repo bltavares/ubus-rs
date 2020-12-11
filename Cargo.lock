@@ -306,7 +306,7 @@ dependencies = [
 name = "ubus-cli"
 version = "0.1.0"
 dependencies = [
- "ubus-sys",
+ "ubus",
 ]
 
 [[package]]
