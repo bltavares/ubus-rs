@@ -1,4 +1,5 @@
 use std::sync::mpsc::{self, Receiver};
+pub use ubus::Context;
 
 pub trait UbusExtension {
     fn call_as<T>(&self, path: &str, method: &str) -> Receiver<T>
@@ -6,7 +7,7 @@ pub trait UbusExtension {
         T: serde::de::DeserializeOwned;
 }
 
-impl UbusExtension for ubus::Context {
+impl UbusExtension for Context {
     fn call_as<T>(&self, path: &str, method: &str) -> Receiver<T>
     where
         T: serde::de::DeserializeOwned,

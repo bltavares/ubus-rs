@@ -371,7 +371,6 @@ name = "ubus-cli"
 version = "0.1.0"
 dependencies = [
  "serde",
- "ubus",
  "ubus-serde",
 ]
 

@@ -7,8 +7,5 @@ edition = '2018'
 version = '1.0.118'
 features = ['derive']
 
-[dependencies.ubus]
-path = '../ubus'
-
 [dependencies.ubus-serde]
 path = '../ubus-serde'
