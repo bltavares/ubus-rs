@@ -108,8 +108,8 @@ impl Context {
 
 #[derive(Debug)]
 pub struct ObjectData {
-    path: String,
-    id: u32,
+    pub path: String,
+    pub id: u32,
 }
 
 type ListCallback = Box<dyn Fn(*mut ubus_sys::ubus_context, *mut ubus_sys::ubus_object_data)>;
