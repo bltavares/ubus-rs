@@ -9,5 +9,6 @@ links = 'ubus'
 pkg-config = '0.3.17'
 bindgen = '0.53.2'
 cc = '1.0.52'
+cmake = '0.1.45'
 
 [dependencies]

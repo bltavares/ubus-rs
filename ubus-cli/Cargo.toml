@@ -3,5 +3,12 @@ name = 'ubus-cli'
 version = '0.1.0'
 authors = ['Bruno Tavares <connect+github@bltavares.com>']
 edition = '2018'
+[dependencies.serde]
+version = '1.0.118'
+features = ['derive']
+
 [dependencies.ubus]
 path = '../ubus'
+
+[dependencies.ubus-serde]
+path = '../ubus-serde'

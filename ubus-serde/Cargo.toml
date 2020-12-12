@@ -1,11 +1,12 @@
 [package]
-name = 'ubus'
+name = 'ubus-serde'
 version = '0.1.0'
 authors = ['Bruno Tavares <connect+github@bltavares.com>']
 edition = '2018'
 
 [dependencies]
-libc = '0.2.81'
+serde = '1.0.118'
+serde_json = '1.0.60'
 
-[dependencies.ubus-sys]
-path = '../ubus-sys'
+[dependencies.ubus]
+path = '../ubus'

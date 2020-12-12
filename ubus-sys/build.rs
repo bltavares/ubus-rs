@@ -19,6 +19,8 @@ fn main() {
                 println!("cargo:rustc-link-lib=ubus");
             }
         } else {
+            let json_c = cmake::build("vendor/json-c");
+
             cc::Build::new()
                 .file("vendor/ubus/libubus.c")
                 .file("vendor/ubus/libubus-req.c")
@@ -31,12 +33,14 @@ fn main() {
                 .file("vendor/libubox/blob.c")
                 .file("vendor/libubox/usock.c")
                 .file("vendor/libubox/blobmsg.c")
+                .file("vendor/libubox/blobmsg_json.c")
                 .include("vendor")
                 .include("vendor/ubus")
                 .include("vendor/libubox")
+                .include(json_c.join("include/json-c"))
                 .define("UBUS_MAX_MSGLEN", "1048576")
                 .define("UBUS_UNIX_SOCKET", "\"/var/run/ubus.sock\"")
-                .warnings(false)
+                .define("JSONC", "1")
                 .shared_flag(true)
                 .compile("libubus.so");
         }
@@ -44,10 +48,13 @@ fn main() {
 
     let bindings = bindgen::Builder::default()
         .header("vendor/ubus/libubus.h")
+        .header("vendor/libubox/blobmsg_json.h")
         .clang_args(vec!["-Ivendor", "-target", "mips-unknown-linux"])
         .whitelist_function("ubus.*")
         .whitelist_type("ubus.*")
         .whitelist_var("ubus.*")
+        .whitelist_function("blob.*")
+        .whitelist_var("blob.*")
         .generate()
         .expect("Unable to generate bindings");
 

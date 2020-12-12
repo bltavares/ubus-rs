@@ -3,4 +3,5 @@ members = [
     'ubus-sys',
     'ubus',
     'ubus-cli',
+    'ubus-serde',
 ]

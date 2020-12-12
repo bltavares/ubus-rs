@@ -39,3 +39,11 @@ cross build --target mips-unknown-linux-musl
 ```
 
 No promises there...
+
+## Release
+
+```sh
+cross build --target mips-unknown-linux-musl -p ubus-cli --release
+docker run --rm -v ${PWD}/target/mips-unknown-linux-musl/release:/target bltavares/rust-cross-mips-openwrt mips-linux-muslsf-strip /target/ubus-cli
+scp target/mips-unknown-linux-musl/release/ubus-cli root@router.ip:~/ubus-cli
+```
