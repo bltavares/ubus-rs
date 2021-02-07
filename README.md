@@ -30,7 +30,7 @@ Add this as a dependency:
 ubus-sys = { git = "https://github.com/bltavares/ubus-rs" }
 ```
 
-Copy the custom `Cargo.toml` file from this project to yours, in order to use an image that works with OpenWRT for cross-compilation.
+Copy the custom `Cross.toml` file from this project to yours, in order to use an image that works with OpenWRT for cross-compilation.
 
 Then it should be possible to run:
 
