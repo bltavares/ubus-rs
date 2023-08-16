@@ -3,53 +3,50 @@ use std::env::consts;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    if let Err(_) = pkg_config::probe_library("ubus") {
-        if let Some(lib_path) = env::var_os("LIBUBUS_DIR") {
-            // I have no idea if this branch works
-            let lib_dir = Path::new(&lib_path);
-            let dylib_name = format!("{}ubus{}", consts::DLL_PREFIX, consts::DLL_SUFFIX);
-            if lib_dir.join(dylib_name).exists()
-                || lib_dir.join("libubus.a").exists()
-                || lib_dir.join("ubus.lib").exists()
-            {
-                println!(
-                    "cargo:rustc-link-search=native={}",
-                    lib_path.into_string().unwrap()
-                );
-                println!("cargo:rustc-link-lib=ubus");
-            }
-        } else {
-            let json_c = cmake::build("vendor/json-c");
+    let mut bindings = bindgen::Builder::default().derive_debug(false);
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    if let Some(lib_path) = env::var_os("LIBUBUS_DIR") {
+        // I have no idea if this branch works
+        let lib_dir = Path::new(&lib_path).display().to_string();
+        println!("cargo:rustc-link-search=native={}/lib", lib_dir);
+        bindings = bindings.clang_arg(format!("-I{}/include", lib_dir));
+    } else {
+        let _libjson_c = cmake::Config::new("vendor/json-c")
+            .define("BUILD_LUA", "OFF")
+            .define("BUILD_EXAMPLES", "OFF")
+            .build();
 
-            cc::Build::new()
-                .file("vendor/ubus/libubus.c")
-                .file("vendor/ubus/libubus-req.c")
-                .file("vendor/ubus/libubus-io.c")
-                .file("vendor/ubus/libubus-obj.c")
-                .file("vendor/ubus/libubus-sub.c")
-                .file("vendor/libubox/avl.c")
-                .file("vendor/libubox/utils.c")
-                .file("vendor/libubox/uloop.c")
-                .file("vendor/libubox/blob.c")
-                .file("vendor/libubox/usock.c")
-                .file("vendor/libubox/blobmsg.c")
-                .file("vendor/libubox/blobmsg_json.c")
-                .include("vendor")
-                .include("vendor/ubus")
-                .include("vendor/libubox")
-                .include(json_c.join("include/json-c"))
-                .define("UBUS_MAX_MSGLEN", "1048576")
-                .define("UBUS_UNIX_SOCKET", "\"/var/run/ubus.sock\"")
-                .define("JSONC", "1")
-                .shared_flag(true)
-                .compile("libubus.so");
-        }
+        env::set_var(
+            "PKG_CONFIG_PATH",
+            format!(
+                "$PKG_CONFIG_PATH:{}",
+                out_path.join("lib").join("pkgconfig").display().to_string()
+            ),
+        );
+        let _libubox = cmake::Config::new("vendor/libubox")
+            .define("BUILD_LUA", "OFF")
+            .define("BUILD_EXAMPLES", "OFF")
+            .build();
+        let _libubus = cmake::Config::new("vendor/ubus")
+            .define("BUILD_LUA", "OFF")
+            .define("BUILD_EXAMPLES", "OFF")
+            .build();
+        println!("cargo:rustc-link-search=native={}/lib", out_path.display());
+        bindings = bindings.clang_arg(format!("-I{}/include", out_path.display()));
     }
 
-    let bindings = bindgen::Builder::default()
-        .header("vendor/ubus/libubus.h")
-        .header("vendor/libubox/blobmsg_json.h")
-        .clang_args(vec!["-Ivendor", "-target", "mips-unknown-linux"])
+    if let Ok(bindgen_target) = env::var("BINDGEN_TARGET") {
+        bindings = bindings.clang_arg(format!("--target={}", bindgen_target));
+    }
+
+    println!("cargo:rustc-link-lib=dylib=ubus");
+    println!("cargo:rustc-link-lib=dylib=ubox");
+    println!("cargo:rustc-link-lib=dylib=json-c");
+    println!("cargo:rustc-link-lib=dylib=blobmsg_json");
+    println!("cargo:rerun-if-changed=wrapper.h");
+
+    let bindings = bindings
+        .header("wrapper.h")
         .whitelist_function("ubus.*")
         .whitelist_type("ubus.*")
         .whitelist_var("ubus.*")
@@ -58,7 +55,6 @@ fn main() {
         .generate()
         .expect("Unable to generate bindings");
 
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
