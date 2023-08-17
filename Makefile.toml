@@ -1,0 +1,48 @@
+[env]
+UCLIBC_IMAGE = "huangjiemin/rust-uclibc-openssl:1.69_stable_1.0.2u_excel"
+OPENWRT_IP = "192.168.254.6"
+COMPILE_LEVEL = "release"
+
+# 192.168.199.159 192.168.254.200
+[tasks.iiotdaa]
+env = {"C_APP"="ubus-cli" }
+run_task  = { name = ["_uclibc-exp"] }
+workspace = false
+
+
+
+[tasks._uclibc-exp]
+condition = { env_set = [ "UCLIBC_IMAGE", "C_APP" ], platforms = ["windows"] }
+script = '''
+@echo off
+SETLOCAL EnableDelayedExpansion
+set "line="
+set "tok= && "
+for %%a in (
+"cargo build --bin %C_APP% --no-default-features --%COMPILE_LEVEL% "
+"rm -rf target/%C_APP%-uclibc "
+"upx --best --lzma -o ./target/%C_APP%-uclibc ./target/mipsel-unknown-linux-uclibc/%COMPILE_LEVEL%/%C_APP%"
+"scp -o 'StrictHostKeyChecking=no' ./target/%C_APP%-uclibc root@%OPENWRT_IP%:/tmp/%C_APP%"
+) do  (
+set line=!line!%%~a!tok!
+)
+rem set line="%line:~0,-4%"
+@echo on
+docker run --rm -it -v %userprofile%\.git-credentials:/root/.git-credentials -v %cd%:/root/src ^
+    -v %userprofile%\uclibc\registry:/usr/local/cargo/registry -v %userprofile%\uclibc\/git:/usr/local/cargo/git ^
+    %UCLIBC_IMAGE% ^
+    sh -c "%line:~0,-4%"
+'''
+
+# 镜像ssh公钥：复制至盒子
+[tasks.pub-image]
+script = '''
+docker run --rm -it ^
+    %UCLIBC_IMAGE%   ^
+    sh -c "cat ~/.ssh/id_rsa.pub | ssh  -o 'StrictHostKeyChecking=no' root@%OPENWRT_IP% 'cat >> /etc/dropbear/authorized_keys'"
+'''
+# windows ssh公钥：复制至盒子
+[tasks.pub-win]
+script = '''
+type %userprofile%\.ssh\id_rsa.pub | ssh  -o "StrictHostKeyChecking=no" root@%OPENWRT_IP% "cat >> /etc/dropbear/authorized_keys"
+'''
